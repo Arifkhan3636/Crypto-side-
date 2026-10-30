@@ -1,4 +1,552 @@
 <!DOCTYPE html>
+
+<html lang="hi">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>CryptoScope — Top 50</title>
+
+<style>
+
+:root{--bg:#080d18;--panel:#111b2b;--line:#26364e;--text:#edf3ff;--muted:#91a0b8;--green:#25d6a1;--red:#ff667d;--blue:#78aaff}
+
+*{box-sizing:border-box}
+
+body{margin:0;background:radial-gradient(ellipse at 20% -10%,#1a3152,transparent 45%),var(--bg);color:var(--text);font:14px system-ui,Arial,sans-serif}
+
+header,main{max-width:1400px;margin:auto;padding:18px 22px}
+
+header{display:flex;justify-content:space-between;align-items:center}
+
+.brand{display:flex;gap:12px;align-items:center}
+
+.logo{background:linear-gradient(135deg,#5d91ff,#875cf5);padding:12px;border-radius:13px;font-size:22px}
+
+.brand h1{font-size:19px;margin:0}
+
+.muted,small{color:var(--muted)}
+
+.live{color:var(--green);font-size:11px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 18px}
+
+.stat,.panel{background:linear-gradient(145deg,#121e30,#0e1726);border:1px solid var(--line);border-radius:15px}
+
+.stat{padding:15px}
+
+.stat label{display:block;color:var(--muted);font-size:10px;margin-bottom:8px}
+
+.stat strong{font-size:20px}
+
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:15px;align-items:start}
+
+.panel{overflow:hidden}
+
+.panelhead{padding:16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+
+.panelhead h2{font-size:14px;margin:0}
+
+.hint{font-size:10px;color:var(--muted);margin-top:4px}
+
+input,button{background:#091321;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px}
+
+.search{width:190px}
+
+.btn{background:#203858;cursor:pointer}
+
+.tablewrap{overflow:auto;max-height:680px}
+
+table{width:100%;border-collapse:collapse;min-width:570px}
+
+th{position:sticky;top:0;background:#121d2d;color:var(--muted);font-size:9px;text-align:right;padding:12px;z-index:1}
+
+th:first-child,td:first-child{text-align:left}
+
+td{padding:11px;border-bottom:1px solid #1e2c40;text-align:right;font-size:11px;white-space:nowrap}
+
+tbody tr{cursor:pointer}
+
+tbody tr:hover,tbody tr.selected{background:#1b304d}
+
+.coin{display:flex;align-items:center;gap:8px}
+
+.coin img{width:25px;height:25px;border-radius:50%}
+
+.coin b{display:block}
+
+.coin small{font-size:9px}
+
+.up{color:var(--green)}
+
+.down{color:var(--red)}
+
+.tag{padding:5px 7px;border-radius:20px;font-size:9px;font-weight:800}
+
+.buy{background:#103a32;color:#62e8bf}
+
+.sell{background:#431f2b;color:#ff8497}
+
+.neutral{background:#393222;color:#f5d384}
+
+.status{padding:12px;color:var(--muted);font-size:10px}
+
+.detail{position:sticky;top:10px}
+
+.empty{text-align:center;padding:65px 20px;color:var(--muted)}
+
+.detailtop{padding:18px}
+
+.asset{display:flex;gap:11px;align-items:center}
+
+.asset img{width:42px;height:42px}
+
+.asset h2{margin:0;font-size:18px}
+
+.price{font-size:28px;font-weight:800;margin:18px 0 4px}
+
+.change{font-size:11px;font-weight:700}
+
+.chartbox{padding:5px 16px 14px}
+
+.ranges{display:flex;gap:6px;margin:5px 0 10px}
+
+.ranges button{font-size:10px;padding:6px 10px;cursor:pointer}
+
+.ranges button.active{background:#29466d}
+
+canvas{width:100%;height:165px;display:block}
+
+.chartnote{font-size:9px;color:var(--muted);margin-top:5px}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 15px 15px}
+
+.metric{background:#0a1422;border:1px solid #1e2c40;border-radius:10px;padding:11px}
+
+.metric label{display:block;color:var(--muted);font-size:9px;margin-bottom:7px}
+
+.metric b{font-size:11px}
+
+.pressure{margin:0 15px 14px;padding:13px;background:#0a1422;border:1px solid #1e2c40;border-radius:11px}
+
+.bar{height:9px;background:#482431;border-radius:20px;overflow:hidden}
+
+.bar span{display:block;height:100%;background:linear-gradient(90deg,#16b98b,#6ae2bd)}
+
+.legend{display:flex;justify-content:space-between;color:var(--muted);font-size:9px;margin-top:7px}
+
+.note{font-size:9px;color:var(--muted);line-height:1.5;margin:0 15px 16px}
+
+@media(max-width:900px){.grid{grid-template-columns:1fr}.detail{position:static}.stats{grid-template-columns:repeat(2,1fr)}}
+
+@media(max-width:520px){header,main{padding:12px}.live{display:none}.stat{padding:11px}.stat strong{font-size:16px}.search{width:140px}}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="brand">
+
+<div class="logo">◈</div>
+
+<div>
+
+<h1>CryptoScope</h1>
+
+<small>TOP 50 · LIVE MARKET DASHBOARD</small>
+
+</div>
+
+</div>
+
+<div class="live">● LIVE MARKET DATA</div>
+
+</header>
+
+<main>
+
+<section class="stats">
+
+<div class="stat"><label>TRACKED COINS</label><strong id="count">—</strong></div>
+
+<div class="stat"><label>BITCOIN PRICE</label><strong id="btc">—</strong><small id="btcchange">Waiting…</small></div>
+
+<div class="stat"><label>ETHEREUM PRICE</label><strong id="eth">—</strong><small id="ethchange">Waiting…</small></div>
+
+<div class="stat"><label>LAST UPDATE</label><strong id="updated" style="font-size:15px">—</strong></div>
+
+</section>
+
+<div class="grid">
+
+<section class="panel">
+
+<div class="panelhead">
+
+<div>
+
+<h2>Top 50 Coins</h2>
+
+<div class="hint">किसी coin पर टैप करें — पूरी जानकारी खुलेगी</div>
+
+</div>
+
+<div>
+
+<input id="search" class="search" placeholder="Search coin…">
+
+<button id="refresh" class="btn">↻</button>
+
+</div>
+
+</div>
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Coin</th>
+
+<th>Price USD</th>
+
+<th>24H</th>
+
+<th>Market Cap</th>
+
+<th>Signal</th>
+
+</tr>
+
+</thead>
+
+<tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody>
+
+</table>
+
+</div>
+
+<div class="status" id="status">CoinGecko से डेटा लोड हो रहा है…</div>
+
+</section>
+
+<aside class="panel detail" id="detail">
+
+<div class="empty">
+
+☝️<br>
+
+<b>Select a coin</b><br>
+
+Top 50 में किसी coin पर टैप करें। यहाँ chart और market details दिखेंगी।
+
+</div>
+
+</aside>
+
+</div>
+
+</main>
+
+<script>
+
+const BASE='https://api.coingecko.com/api/v3';
+
+const USD=BASE+'/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h';
+
+const INR=USD.replace('vs_currency=usd','vs_currency=inr');
+
+let coins=[],selected=null,days=7,history=[];
+
+const $=id=>document.getElementById(id);
+
+const money=(n,cur='USD')=>n==null?'—':new Intl.NumberFormat('en-US',{style:'currency',currency:cur,maximumFractionDigits:n<1?6:2}).format(n);
+
+const short=n=>n==null?'—':new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:2}).format(n);
+
+function pressure(c){
+
+let b=Math.max(5,Math.min(95,50+Number(c.price_change_percentage_24h||0)*2));
+
+return{buy:b,label:b>=55?'BUY':b<=45?'SELL':'NEUTRAL'}
+
+}
+
+function render(){
+
+let q=$('search').value.toLowerCase();
+
+let list=coins.filter(c=>c.name.toLowerCase().includes(q)||c.symbol.toLowerCase().includes(q));
+
+$('rows').innerHTML=list.map(c=>{
+
+let s=pressure(c),v=Number(c.price_change_percentage_24h||0);
+
+return `<tr data-id="${c.id}" class="${selected&&selected.id===c.id?'selected':''}">
+
+<td><div class="coin"><b>${c.market_cap_rank||'—'}</b><img src="${c.image}"><div><b>${c.name}</b><small>${c.symbol.toUpperCase()}</small></div></div></td>
+
+<td>${money(c.current_price)}</td>
+
+<td class="${v>=0?'up':'down'}">${v>=0?'▲':'▼'} ${Math.abs(v).toFixed(2)}%</td>
+
+<td>${money(c.market_cap)}</td>
+
+<td><span class="tag ${s.label==='BUY'?'buy':s.label==='SELL'?'sell':'neutral'}">${s.label}</span></td>
+
+</tr>`
+
+}).join('')||'<tr><td colspan="5">Coin नहीं मिला</td></tr>';
+
+document.querySelectorAll('tr[data-id]').forEach(tr=>tr.onclick=()=>choose(coins.find(c=>c.id===tr.dataset.id)))
+
+}
+
+async function load(){
+
+$('status').textContent='Live prices update हो रहे हैं…';
+
+try{
+
+let [a,b]=await Promise.all([fetch(USD),fetch(INR)]);
+
+if(!a.ok)throw Error('API '+a.status);
+
+let data=await a.json(),ind=b.ok?await b.json():[];
+
+let map=new Map(ind.map(c=>[c.id,c.current_price]));
+
+coins=data.map(c=>({...c,inr_price:map.get(c.id)}));
+
+$('count').textContent=coins.length;
+
+$('updated').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+for(let [id,p] of [['bitcoin','btc'],['ethereum','eth']]){
+
+let c=coins.find(x=>x.id===id);
+
+if(c){
+
+$(p).textContent=money(c.current_price);
+
+$(p+'change').textContent=Number(c.price_change_percentage_24h||0).toFixed(2)+'% in 24h';
+
+$(p+'change').className=c.price_change_percentage_24h>=0?'up':'down';
+
+}
+
+}
+
+render();
+
+$('status').textContent='Updated '+new Date().toLocaleString('en-IN')+' · '+coins.length+' coins';
+
+if(selected){
+
+selected=coins.find(c=>c.id===selected.id)||selected;
+
+renderDetail();
+
+}
+
+}catch(e){
+
+$('status').textContent='डेटा लोड नहीं हुआ: '+e.message+' — बाद में Refresh करें।';
+
+}
+
+}
+
+async function choose(c){
+
+if(!c)return;
+
+selected=c;
+
+days=7;
+
+render();
+
+renderDetail();
+
+await loadHistory();
+
+}
+
+function renderDetail(){
+
+let c=selected,s=pressure(c),v=Number(c.price_change_percentage_24h||0);
+
+$('detail').innerHTML=`
+
+<div class="detailtop">
+
+<div class="asset">
+
+<img src="${c.image}">
+
+<div><h2>${c.name}</h2><small>${c.symbol.toUpperCase()} · Rank #${c.market_cap_rank||'—'}</small></div>
+
+</div>
+
+<div class="price">${money(c.current_price)}</div>
+
+<div class="change ${v>=0?'up':'down'}">${v>=0?'▲':'▼'} ${Math.abs(v).toFixed(2)}% <span class="muted">24 hours</span></div>
+
+</div>
+
+<div class="chartbox">
+
+<div class="ranges">
+
+${[[1,'24H'],[7,'7D'],[30,'30D'],[90,'90D']].map(([d,t])=>`<button data-days="${d}" class="${days===d?'active':''}">${t}</button>`).join('')}
+
+</div>
+
+<canvas id="chart"></canvas>
+
+<div class="chartnote" id="chartnote">Price history लोड हो रही है…</div>
+
+</div>
+
+<div class="metrics">
+
+<div class="metric"><label>PRICE IN INR</label><b>${money(c.inr_price,'INR')}</b></div>
+
+<div class="metric"><label>MARKET CAP</label><b>${money(c.market_cap)}</b></div>
+
+<div class="metric"><label>24H VOLUME</label><b>${money(c.total_volume)}</b></div>
+
+<div class="metric"><label>24H HIGH</label><b>${money(c.high_24h)}</b></div>
+
+<div class="metric"><label>24H LOW</label><b>${money(c.low_24h)}</b></div>
+
+<div class="metric"><label>CIRCULATING SUPPLY</label><b>${short(c.circulating_supply)} ${c.symbol.toUpperCase()}</b></div>
+
+</div>
+
+<div class="pressure">
+
+<b>Estimated Buy / Sell Pressure</b>
+
+<span class="tag ${s.label==='BUY'?'buy':s.label==='SELL'?'sell':'neutral'}">${s.label}</span>
+
+<div class="bar" style="margin-top:10px"><span style="width:${s.buy}%"></span></div>
+
+<div class="legend"><span>Buy ${s.buy.toFixed(0)}%</span><span>Sell ${(100-s.buy).toFixed(0)}%</span></div>
+
+</div>
+
+<p class="note">Pressure 24h price change से निकला अनुमान है, वास्तविक order-book या trade-flow डेटा नहीं। इसे अकेले trading decision के लिए इस्तेमाल न करें।</p>
+
+`;
+
+document.querySelectorAll('[data-days]').forEach(btn=>btn.onclick=async()=>{
+
+days=Number(btn.dataset.days);
+
+renderDetail();
+
+await loadHistory();
+
+});
+
+}
+
+async function loadHistory(){
+
+if(!selected)return;
+
+try{
+
+let r=await fetch(`${BASE}/coins/${selected.id}/market_chart?vs_currency=usd&days=${days}`);
+
+if(!r.ok)throw Error();
+
+let d=await r.json();
+
+history=d.prices||[];
+
+drawChart();
+
+}catch(e){
+
+if($('chartnote'))$('chartnote').textContent='Chart अभी API limit या network के कारण उपलब्ध नहीं है।';
+
+}
+
+}
+
+function drawChart(){
+
+let c=$('chart');
+
+if(!c)return;
+
+let w=c.clientWidth||320,h=165,r=window.devicePixelRatio||1;
+
+c.width=w*r;c.height=h*r;
+
+let x=c.getContext('2d');x.scale(r,r);
+
+if(history.length<2){
+
+$('chartnote').textContent='Chart data उपलब्ध नहीं';
+
+return;
+
+}
+
+let a=history.map(v=>v[1]),mn=Math.min(...a),mx=Math.max(...a);
+
+let pts=a.map((v,i)=>({x:8+i/(a.length-1)*(w-16),y:h-8-(v-mn)/(mx-mn||1)*(h-16)}));
+
+x.strokeStyle='#26364e';
+
+for(let i=1;i<4;i++){
+
+x.beginPath();x.moveTo(0,i*h/4);x.lineTo(w,i*h/4);x.stroke();
+
+}
+
+x.beginPath();
+
+pts.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));
+
+x.strokeStyle=a[a.length-1]>=a[0]?'#25d6a1':'#ff667d';
+
+x.lineWidth=2;x.stroke();
+
+$('chartnote').textContent=days+' day price history · '+money(mn)+' — '+money(mx);
+
+}
+
+$('refresh').onclick=load;
+
+$('search').oninput=render;
+
+window.onresize=()=>history.length&&drawChart();
+
+load();
+
+setInterval(load,60000);
+
+</script>
+
+</body>
+
+</html>!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
