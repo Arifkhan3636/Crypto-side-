@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crypto Buy/Sell Pressure</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0b0f19; color: #e6e9f0; font-family: -apple-system, Segoe UI, Roboto, sans-serif; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 6px; }
+  .sub { text-align: center; color: #8b93a7; font-size: 13px; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+  .card { background: #141a29; border-radius: 14px; padding: 20px; border: 1px solid #222b40; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .coin { font-size: 22px; font-weight: 700; }
+  .price { font-size: 22px; font-weight: 700; }
+  .chg { font-size: 13px; margin-left: 8px; }
+  .up { color: #22c55e; } .down { color: #ef4444; }
+  .label { font-size: 12px; color: #8b93a7; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .bar { display: flex; height: 26px; border-radius: 8px; overflow: hidden; background: #222b40; }
+  .bar .buy { background: #22c55e; transition: width .6s; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#04210f; }
+  .bar .sell { background: #ef4444; transition: width .6s; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#2a0505; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  th, td { padding: 6px 4px; text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: #8b93a7; font-weight: 500; border-bottom: 1px solid #222b40; }
+  .verdict { margin-top: 14px; padding: 10px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 14px; }
+  .v-buy { background: rgba(34,197,94,.15); color: #22c55e; }
+  .v-sell { background: rgba(239,68,68,.15); color: #ef4444; }
+  .v-neutral { background: rgba(139,147,167,.15); color: #aab2c5; }
+  .foot { text-align: center; color: #6b7389; font-size: 12px; margin-top: 28px; }
+</style>
+</head>
+<body>
+<h1>Crypto Buy / Sell Pressure</h1>
+<div class="sub">लाइव डेटा: Binance · Coinbase · Kraken &nbsp;|&nbsp; <span id="updated">लोड हो रहा है...</span></div>
+<div class="grid" id="grid"></div>
+<div class="foot">सिर्फ़ जानकारी के लिए है, निवेश की सलाह नहीं। बाय/सेल प्रेशर ऑर्डर बुक और हाल के ट्रेड्स से निकाला गया अनुमान है।</div>
+
+<script>
+const COINS = [
+  { name: 'Bitcoin',  sym: 'BTC', binance: 'BTCUSDT', coinbase: 'BTC-USD', kraken: 'XBTUSD' },
+  { name: 'Ethereum', sym: 'ETH', binance: 'ETHUSDT', coinbase: 'ETH-USD', kraken: 'ETHUSD' },
+  { name: 'Solana',   sym: 'SOL', binance: 'SOLUSDT', coinbase: 'SOL-USD', kraken: 'SOLUSD' }
+];
+
+const fmt = (n, d = 2) => Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const sumQty = (rows) => rows.reduce((s, r) => s + parseFloat(r[1]), 0);
+
+function pressure(bidQty, askQty) {
+  const total = bidQty + askQty || 1;
+  return { buy: (bidQty / total) * 100, sell: (askQty / total) * 100 };
+}
+
+async function getJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(url + ' ' + r.status);
+  return r.json();
+}
+
+async function fetchBinance(c) {
+  const [book, trades, tick] = await Promise.all([
+    getJSON(`https://api.binance.com/api/v3/depth?symbol=${c.binance}&limit=50`),
+    getJSON(`https://api.binance.com/api/v3/trades?symbol=${c.binance}&limit=500`),
+    getJSON(`https://api.binance.com/api/v3/ticker/24hr?symbol=${c.binance}`)
+  ]);
+  // isBuyerMaker = true मतलब सेलर ने मार्केट ऑर्डर मारा (सेल)
+  const sells = trades.filter(t => t.isBuyerMaker).length;
+  const buys = trades.length - sells;
+  return {
+    platform: 'Binance',
+    price: parseFloat(tick.lastPrice),
+    change: parseFloat(tick.priceChangePercent),
+    ...pressure(sumQty(book.bids), sumQty(book.asks)),
+    buyers: buys, sellers: sells
+  };
+}
+
+async function fetchCoinbase(c) {
+  const [book, trades, tick] = await Promise.all([
+    getJSON(`https://api.exchange.coinbase.com/products/${c.coinbase}/book?level=2`),
+    getJSON(`https://api.exchange.coinbase.com/products/${c.coinbase}/trades?limit=100`),
+    getJSON(`https://api.exchange.coinbase.com/products/${c.coinbase}/stats`)
+  ]);
+  const bids = book.bids.slice(0, 50).map(b => [b[0], b[1]]);
+  const asks = book.asks.slice(0, 50).map(a => [a[0], a[1]]);
+  // Coinbase में side = मेकर की साइड, इसलिए 'sell' मतलब टेकर ने खरीदा
+  const buys = trades.filter(t => t.side === 'sell').length;
+  const sells = trades.length - buys;
+  const open = parseFloat(tick.open), last = parseFloat(tick.last);
+  return {
+    platform: 'Coinbase',
+    price: last,
+    change: ((last - open) / open) * 100,
+    ...pressure(sumQty(bids), sumQty(asks)),
+    buyers: buys, sellers: sells
+  };
+}
+
+async function fetchKraken(c) {
+  const [book, trades, tick] = await Promise.all([
+    getJSON(`https://api.kraken.com/0/public/Depth?pair=${c.kraken}&count=50`),
+    getJSON(`https://api.kraken.com/0/public/Trades?pair=${c.kraken}&count=500`),
+    getJSON(`https://api.kraken.com/0/public/Ticker?pair=${c.kraken}`)
+  ]);
+  const b = Object.values(book.result)[0];
+  const tr = Object.values(trades.result).find(Array.isArray);
+  const tk = Object.values(tick.result)[0];
+  const buys = tr.filter(t => t[3] === 'b').length;
+  const sells = tr.filter(t => t[3] === 's').length;
+  const last = parseFloat(tk.c[0]), open = parseFloat(tk.o);
+  return {
+    platform: 'Kraken',
+    price: last,
+    change: ((last - open) / open) * 100,
+    ...pressure(sumQty(b.bids), sumQty(b.asks)),
+    buyers: buys, sellers: sells
+  };
+}
+
+function verdict(buy) {
+  if (buy >= 55) return ['v-buy', 'बाय प्रेशर ज़्यादा है'];
+  if (buy <= 45) return ['v-sell', 'सेल प्रेशर ज़्यादा है'];
+  return ['v-neutral', 'बाय और सेल लगभग बराबर'];
+}
+
+function render(coin, rows) {
+  const ok = rows.filter(r => r && !r.error);
+  if (!ok.length) return `<div class="card"><div class="coin">${coin.name}</div><p>डेटा नहीं मिला</p></div>`;
+  const avgBuy = ok.reduce((s, r) => s + r.buy, 0) / ok.length;
+  const avgSell = 100 - avgBuy;
+  const totalBuyers = ok.reduce((s, r) => s + r.buyers, 0);
+  const totalSellers = ok.reduce((s, r) => s + r.sellers, 0);
+  const tradeTotal = totalBuyers + totalSellers || 1;
+  const price = ok[0].price, chg = ok[0].change;
+  const [vcls, vtxt] = verdict(avgBuy);
+
+  const trs = ok.map(r => `
+    <tr>
+      <td>${r.platform}</td>
+      <td class="up">${fmt(r.buy, 1)}%</td>
+      <td class="down">${fmt(r.sell, 1)}%</td>
+      <td>${r.buyers} / ${r.sellers}</td>
+    </tr>`).join('');
+
+  return `
+  <div class="card">
+    <div class="head">
+      <div class="coin">${coin.name} <span style="color:#8b93a7;font-size:14px">${coin.sym}</span></div>
+      <div><span class="price">$${fmt(price)}</span><span class="chg ${chg >= 0 ? 'up' : 'down'}">${chg >= 0 ? '▲' : '▼'} ${fmt(Math.abs(chg))}%</span></div>
+    </div>
+
+    <div class="label">ऑर्डर बुक प्रेशर (सभी प्लेटफ़ॉर्म का औसत)</div>
+    <div class="bar">
+      <div class="buy" style="width:${avgBuy}%">बाय ${fmt(avgBuy, 1)}%</div>
+      <div class="sell" style="width:${avgSell}%">सेल ${fmt(avgSell, 1)}%</div>
+    </div>
+
+    <div class="label">हाल के ट्रेड्स (खरीदार बनाम बेचने वाले)</div>
+    <div class="bar">
+      <div class="buy" style="width:${(totalBuyers / tradeTotal) * 100}%">${totalBuyers}</div>
+      <div class="sell" style="width:${(totalSellers / tradeTotal) * 100}%">${totalSellers}</div>
+    </div>
+
+    <div class="label">प्लेटफ़ॉर्म के हिसाब से</div>
+    <table>
+      <tr><th>प्लेटफ़ॉर्म</th><th>बाय %</th><th>सेल %</th><th>बाय / सेल ट्रेड्स</th></tr>
+      ${trs}
+    </table>
+
+    <div class="verdict ${vcls}">${vtxt}</div>
+  </div>`;
+}
+
+async function refresh() {
+  const grid = document.getElementById('grid');
+  const cards = await Promise.all(COINS.map(async coin => {
+    const rows = await Promise.all([
+      fetchBinance(coin).catch(e => ({ error: e })),
+      fetchCoinbase(coin).catch(e => ({ error: e })),
+      fetchKraken(coin).catch(e => ({ error: e }))
+    ]);
+    return render(coin, rows);
+  }));
+  grid.innerHTML = cards.join('');
+  document.getElementById('updated').textContent = 'आखिरी अपडेट: ' + new Date().toLocaleTimeString();
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
