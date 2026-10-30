@@ -3,191 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Crypto Buy/Sell Pressure</title>
+<title>Crypto Top 50 Dashboard</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0b0f19; color: #e6e9f0; font-family: -apple-system, Segoe UI, Roboto, sans-serif; padding: 20px; }
-  h1 { text-align: center; margin-bottom: 6px; }
-  .sub { text-align: center; color: #8b93a7; font-size: 13px; margin-bottom: 24px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
-  .card { background: #141a29; border-radius: 14px; padding: 20px; border: 1px solid #222b40; }
-  .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
-  .coin { font-size: 22px; font-weight: 700; }
-  .price { font-size: 22px; font-weight: 700; }
-  .chg { font-size: 13px; margin-left: 8px; }
-  .up { color: #22c55e; } .down { color: #ef4444; }
-  .label { font-size: 12px; color: #8b93a7; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .5px; }
-  .bar { display: flex; height: 26px; border-radius: 8px; overflow: hidden; background: #222b40; }
-  .bar .buy { background: #22c55e; transition: width .6s; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#04210f; }
-  .bar .sell { background: #ef4444; transition: width .6s; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#2a0505; }
-  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
-  th, td { padding: 6px 4px; text-align: right; }
-  th:first-child, td:first-child { text-align: left; }
-  th { color: #8b93a7; font-weight: 500; border-bottom: 1px solid #222b40; }
-  .verdict { margin-top: 14px; padding: 10px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 14px; }
-  .v-buy { background: rgba(34,197,94,.15); color: #22c55e; }
-  .v-sell { background: rgba(239,68,68,.15); color: #ef4444; }
-  .v-neutral { background: rgba(139,147,167,.15); color: #aab2c5; }
-  .foot { text-align: center; color: #6b7389; font-size: 12px; margin-top: 28px; }
+*{box-sizing:border-box}body{margin:0;padding:18px;background:#0b0f19;color:#e6e9f0;font-family:Arial,sans-serif}
+header{max-width:1200px;margin:0 auto 18px;text-align:center}h1{margin:8px 0}.muted{color:#9aa4b8;font-size:13px}
+.toolbar{max-width:1200px;margin:16px auto;display:flex;gap:8px;flex-wrap:wrap}
+input,button{background:#141a29;color:#e6e9f0;border:1px solid #303b52;border-radius:9px;padding:11px;font-size:14px}
+input{flex:1;min-width:180px}button{cursor:pointer}
+.status{max-width:1200px;margin:8px auto;color:#9aa4b8;font-size:13px}
+.wrap{max-width:1200px;margin:auto;overflow-x:auto;background:#141a29;border:1px solid #263149;border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:850px}th,td{padding:12px 10px;border-bottom:1px solid #263149;text-align:right;font-size:13px}
+th{color:#9aa4b8;font-weight:600;position:sticky;top:0;background:#141a29}th:first-child,td:first-child{text-align:left}
+.coin{display:flex;align-items:center;gap:9px}.coin img{width:24px;height:24px}.name{font-weight:700}.symbol{color:#9aa4b8;font-size:11px}
+.up{color:#22c55e}.down{color:#ef4444}.pill{display:inline-block;padding:5px 8px;border-radius:20px;font-weight:700;font-size:11px}
+.buy{background:#123b2a;color:#4ade80}.sell{background:#451c25;color:#fb7185}.neutral{background:#343044;color:#c4b5fd}
+.note{max-width:1200px;margin:14px auto;color:#8993a8;font-size:12px;line-height:1.5}
+@media(max-width:600px){body{padding:10px}h1{font-size:22px}}
 </style>
 </head>
 <body>
-<h1>Crypto Buy / Sell Pressure</h1>
-<div class="sub">लाइव डेटा: Binance · Coinbase · Kraken &nbsp;|&nbsp; <span id="updated">लोड हो रहा है...</span></div>
-<div class="grid" id="grid"></div>
-<div class="foot">सिर्फ़ जानकारी के लिए है, निवेश की सलाह नहीं। बाय/सेल प्रेशर ऑर्डर बुक और हाल के ट्रेड्स से निकाला गया अनुमान है।</div>
-
+<header><h1>🚀 Crypto Top 50 Dashboard</h1><div class="muted">लाइव कीमतें • INR / USD • 24 घंटे का बदलाव • अनुमानित Buy/Sell Pressure</div></header>
+<div class="toolbar"><input id="search" placeholder="Coin खोजें: Bitcoin, BTC..." /><button id="refresh">Refresh</button></div>
+<div class="status" id="status">मार्केट डेटा लोड हो रहा है...</div>
+<div class="wrap"><table><thead><tr><th># / Coin</th><th>Price (USD)</th><th>Price (INR)</th><th>24H Change</th><th>Market Cap (USD)</th><th>24H Volume</th><th>Buy Pressure*</th><th>Signal</th></tr></thead><tbody id="rows"><tr><td colspan="8">लोड हो रहा है...</td></tr></tbody></table></div>
+<div class="note">* Buy/Sell Pressure यहां 24 घंटे के price change और volume के आधार पर एक अनुमानित संकेत है। यह वास्तविक exchange order-book या trade-flow डेटा नहीं है और इसे अकेले ट्रेडिंग निर्णय के लिए इस्तेमाल न करें। डेटा CoinGecko API से आता है; API की उपलब्धता/रेट लिमिट के कारण अपडेट में देरी हो सकती है।</div>
 <script>
-const COINS = [
-  { name: 'Bitcoin',  sym: 'BTC', binance: 'BTCUSDT', coinbase: 'BTC-USD', kraken: 'XBTUSD' },
-  { name: 'Ethereum', sym: 'ETH', binance: 'ETHUSDT', coinbase: 'ETH-USD', kraken: 'ETHUSD' },
-  { name: 'Solana',   sym: 'SOL', binance: 'SOLUSDT', coinbase: 'SOL-USD', kraken: 'SOLUSD' }
-];
-
-const fmt = (n, d = 2) => Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
-const sumQty = (rows) => rows.reduce((s, r) => s + parseFloat(r[1]), 0);
-
-function pressure(bidQty, askQty) {
-  const total = bidQty + askQty || 1;
-  return { buy: (bidQty / total) * 100, sell: (askQty / total) * 100 };
+const API='https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h';
+let coins=[];
+const money=(n,cur='USD')=>n==null?'—':new Intl.NumberFormat('en-US',{style:'currency',currency:cur,maximumFractionDigits:n<1?6:2}).format(n);
+const compact=n=>n==null?'—':new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:2}).format(n);
+function pressure(c){
+ const change=Number(c.price_change_percentage_24h||0);
+ // Directional proxy, deliberately capped to avoid presenting it as order-book data.
+ const buy=Math.max(5,Math.min(95,50+change*2));
+ const label=buy>=55?'BUY':buy<=45?'SELL':'NEUTRAL';
+ return {buy,label};
 }
-
-async function getJSON(url) {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(url + ' ' + r.status);
-  return r.json();
+function render(){
+ const q=document.getElementById('search').value.toLowerCase();
+ const filtered=coins.filter(c=>c.name.toLowerCase().includes(q)||c.symbol.toLowerCase().includes(q));
+ document.getElementById('rows').innerHTML=filtered.map(c=>{
+  const p=pressure(c),chg=Number(c.price_change_percentage_24h||0);
+  const cls=p.label==='BUY'?'buy':p.label==='SELL'?'sell':'neutral';
+  return `<tr><td><div class="coin"><b>${c.market_cap_rank||'—'}</b><img src="${c.image}" alt=""><div><div class="name">${c.name}</div><div class="symbol">${c.symbol.toUpperCase()}</div></div></div></td>
+  <td>${money(c.current_price)}</td><td>${money(c.current_price*c.inr_rate,'INR')}</td>
+  <td class="${chg>=0?'up':'down'}">${chg>=0?'▲':'▼'} ${Math.abs(chg).toFixed(2)}%</td>
+  <td>${money(c.market_cap)}</td><td>${compact(c.total_volume)}</td>
+  <td>${p.buy.toFixed(0)}% / ${(100-p.buy).toFixed(0)}%</td><td><span class="pill ${cls}">${p.label}</span></td></tr>`;
+ }).join('')||'<tr><td colspan="8">कोई coin नहीं मिला।</td></tr>';
 }
-
-async function fetchBinance(c) {
-  const [book, trades, tick] = await Promise.all([
-    getJSON(`https://api.binance.com/api/v3/depth?symbol=${c.binance}&limit=50`),
-    getJSON(`https://api.binance.com/api/v3/trades?symbol=${c.binance}&limit=500`),
-    getJSON(`https://api.binance.com/api/v3/ticker/24hr?symbol=${c.binance}`)
-  ]);
-  // isBuyerMaker = true मतलब सेलर ने मार्केट ऑर्डर मारा (सेल)
-  const sells = trades.filter(t => t.isBuyerMaker).length;
-  const buys = trades.length - sells;
-  return {
-    platform: 'Binance',
-    price: parseFloat(tick.lastPrice),
-    change: parseFloat(tick.priceChangePercent),
-    ...pressure(sumQty(book.bids), sumQty(book.asks)),
-    buyers: buys, sellers: sells
-  };
+async function load(){
+ const status=document.getElementById('status');status.textContent='डेटा अपडेट हो रहा है...';
+ try{
+  const res=await fetch(API);if(!res.ok)throw new Error('API response '+res.status);
+  const data=await res.json();
+  // CoinGecko market endpoint returns USD values; obtain INR conversion from the same endpoint.
+  const inrRes=await fetch(API.replace('vs_currency=usd','vs_currency=inr'));
+  const inrData=inrRes.ok?await inrRes.json():[];
+  const inrMap=new Map(inrData.map(x=>[x.id,x.current_price]));
+  coins=data.map(c=>({...c,inr_rate:inrMap.has(c.id)&&c.current_price?inrMap.get(c.id)/c.current_price:0}));
+  render();status.textContent='आखिरी अपडेट: '+new Date().toLocaleString('hi-IN')+' • '+coins.length+' coins';
+ }catch(e){status.textContent='डेटा नहीं आ पाया: '+e.message+' — थोड़ी देर बाद Refresh दबाएँ।';}
 }
-
-async function fetchCoinbase(c) {
-  const [book, trades, tick] = await Promise.all([
-    getJSON(`https://api.exchange.coinbase.com/products/${c.coinbase}/book?level=2`),
-    getJSON(`https://api.exchange.coinbase.com/products/${c.coinbase}/trades?limit=100`),
-    getJSON(`https://api.exchange.coinbase.com/products/${c.coinbase}/stats`)
-  ]);
-  const bids = book.bids.slice(0, 50).map(b => [b[0], b[1]]);
-  const asks = book.asks.slice(0, 50).map(a => [a[0], a[1]]);
-  // Coinbase में side = मेकर की साइड, इसलिए 'sell' मतलब टेकर ने खरीदा
-  const buys = trades.filter(t => t.side === 'sell').length;
-  const sells = trades.length - buys;
-  const open = parseFloat(tick.open), last = parseFloat(tick.last);
-  return {
-    platform: 'Coinbase',
-    price: last,
-    change: ((last - open) / open) * 100,
-    ...pressure(sumQty(bids), sumQty(asks)),
-    buyers: buys, sellers: sells
-  };
-}
-
-async function fetchKraken(c) {
-  const [book, trades, tick] = await Promise.all([
-    getJSON(`https://api.kraken.com/0/public/Depth?pair=${c.kraken}&count=50`),
-    getJSON(`https://api.kraken.com/0/public/Trades?pair=${c.kraken}&count=500`),
-    getJSON(`https://api.kraken.com/0/public/Ticker?pair=${c.kraken}`)
-  ]);
-  const b = Object.values(book.result)[0];
-  const tr = Object.values(trades.result).find(Array.isArray);
-  const tk = Object.values(tick.result)[0];
-  const buys = tr.filter(t => t[3] === 'b').length;
-  const sells = tr.filter(t => t[3] === 's').length;
-  const last = parseFloat(tk.c[0]), open = parseFloat(tk.o);
-  return {
-    platform: 'Kraken',
-    price: last,
-    change: ((last - open) / open) * 100,
-    ...pressure(sumQty(b.bids), sumQty(b.asks)),
-    buyers: buys, sellers: sells
-  };
-}
-
-function verdict(buy) {
-  if (buy >= 55) return ['v-buy', 'बाय प्रेशर ज़्यादा है'];
-  if (buy <= 45) return ['v-sell', 'सेल प्रेशर ज़्यादा है'];
-  return ['v-neutral', 'बाय और सेल लगभग बराबर'];
-}
-
-function render(coin, rows) {
-  const ok = rows.filter(r => r && !r.error);
-  if (!ok.length) return `<div class="card"><div class="coin">${coin.name}</div><p>डेटा नहीं मिला</p></div>`;
-  const avgBuy = ok.reduce((s, r) => s + r.buy, 0) / ok.length;
-  const avgSell = 100 - avgBuy;
-  const totalBuyers = ok.reduce((s, r) => s + r.buyers, 0);
-  const totalSellers = ok.reduce((s, r) => s + r.sellers, 0);
-  const tradeTotal = totalBuyers + totalSellers || 1;
-  const price = ok[0].price, chg = ok[0].change;
-  const [vcls, vtxt] = verdict(avgBuy);
-
-  const trs = ok.map(r => `
-    <tr>
-      <td>${r.platform}</td>
-      <td class="up">${fmt(r.buy, 1)}%</td>
-      <td class="down">${fmt(r.sell, 1)}%</td>
-      <td>${r.buyers} / ${r.sellers}</td>
-    </tr>`).join('');
-
-  return `
-  <div class="card">
-    <div class="head">
-      <div class="coin">${coin.name} <span style="color:#8b93a7;font-size:14px">${coin.sym}</span></div>
-      <div><span class="price">$${fmt(price)}</span><span class="chg ${chg >= 0 ? 'up' : 'down'}">${chg >= 0 ? '▲' : '▼'} ${fmt(Math.abs(chg))}%</span></div>
-    </div>
-
-    <div class="label">ऑर्डर बुक प्रेशर (सभी प्लेटफ़ॉर्म का औसत)</div>
-    <div class="bar">
-      <div class="buy" style="width:${avgBuy}%">बाय ${fmt(avgBuy, 1)}%</div>
-      <div class="sell" style="width:${avgSell}%">सेल ${fmt(avgSell, 1)}%</div>
-    </div>
-
-    <div class="label">हाल के ट्रेड्स (खरीदार बनाम बेचने वाले)</div>
-    <div class="bar">
-      <div class="buy" style="width:${(totalBuyers / tradeTotal) * 100}%">${totalBuyers}</div>
-      <div class="sell" style="width:${(totalSellers / tradeTotal) * 100}%">${totalSellers}</div>
-    </div>
-
-    <div class="label">प्लेटफ़ॉर्म के हिसाब से</div>
-    <table>
-      <tr><th>प्लेटफ़ॉर्म</th><th>बाय %</th><th>सेल %</th><th>बाय / सेल ट्रेड्स</th></tr>
-      ${trs}
-    </table>
-
-    <div class="verdict ${vcls}">${vtxt}</div>
-  </div>`;
-}
-
-async function refresh() {
-  const grid = document.getElementById('grid');
-  const cards = await Promise.all(COINS.map(async coin => {
-    const rows = await Promise.all([
-      fetchBinance(coin).catch(e => ({ error: e })),
-      fetchCoinbase(coin).catch(e => ({ error: e })),
-      fetchKraken(coin).catch(e => ({ error: e }))
-    ]);
-    return render(coin, rows);
-  }));
-  grid.innerHTML = cards.join('');
-  document.getElementById('updated').textContent = 'आखिरी अपडेट: ' + new Date().toLocaleTimeString();
-}
-
-refresh();
-setInterval(refresh, 5000);
+document.getElementById('refresh').addEventListener('click',load);
+document.getElementById('search').addEventListener('input',render);
+load();setInterval(load,60000);
 </script>
-</body>
-</html>
+</body></html>
